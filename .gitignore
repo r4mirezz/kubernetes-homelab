@@ -1,0 +1,9 @@
+*.pem
+*.ppk
+.env
+.env.*
+!.env.example
+.kube/
+kubeconfig*
+admin.conf
+super-admin.conf
