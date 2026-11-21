@@ -23,7 +23,7 @@ spec:
         - name: ghcr-pull
       containers:
         - name: support-desk
-          image: ghcr.io/r4mirezz/support-desk:0.1.0
+          image: ghcr.io/r4mirezz/support-desk@sha256:f6f4f22b8804539b9ff34869a4e7bef0020789b493532531e5dda27c9861715b
           imagePullPolicy: Always
           ports:
             - name: http
