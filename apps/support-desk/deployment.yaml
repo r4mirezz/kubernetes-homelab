@@ -23,7 +23,7 @@ spec:
         - name: ghcr-pull
       containers:
         - name: support-desk
-          image: ghcr.io/r4mirezz/support-desk@sha256:4ef66bb0f0a49c5a0ae2a479cfbd69c89af725c7ca509ba3c630b265a3c2a6da
+          image: ghcr.io/r4mirezz/support-desk@sha256:7231688f03670f1eb8ebe6c0fd5dabed5bd551f18d08c07bbd2a26aada042e87
           imagePullPolicy: Always
           ports:
             - name: http
@@ -50,7 +50,7 @@ spec:
             failureThreshold: 30
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/health/ready
               port: http
             periodSeconds: 5
           livenessProbe:
