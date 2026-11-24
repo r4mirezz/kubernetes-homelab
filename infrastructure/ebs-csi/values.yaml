@@ -1,0 +1,15 @@
+controller:
+  replicaCount: 1
+  region: eu-north-1
+  nodeSelector:
+    kubernetes.io/hostname: ip-172-31-14-159
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+node:
+  hostNetwork: true
+  enableWindows: false
+  nodeSelector:
+    kubernetes.io/hostname: ip-172-31-1-110

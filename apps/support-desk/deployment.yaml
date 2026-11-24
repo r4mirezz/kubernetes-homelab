@@ -23,11 +23,25 @@ spec:
         - name: ghcr-pull
       containers:
         - name: support-desk
-          image: ghcr.io/r4mirezz/support-desk@sha256:7231688f03670f1eb8ebe6c0fd5dabed5bd551f18d08c07bbd2a26aada042e87
+          image: ghcr.io/r4mirezz/support-desk@sha256:02ecb2901a96837c1878916ae3e18c1cfcdf56a9984248606074585d75d56e09
           imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 3000
+          env:
+            - name: PGHOST
+              value: postgres
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: support_desk
+            - name: PGUSER
+              value: support_desk_app
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: support-desk-db
+                  key: PGPASSWORD
           resources:
             requests:
               cpu: 100m
