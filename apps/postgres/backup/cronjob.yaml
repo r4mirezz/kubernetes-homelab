@@ -1,0 +1,89 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: training
+spec:
+  schedule: "0 2 * * *"
+  timeZone: Etc/UTC
+  suspend: false
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 600
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          hostNetwork: true
+          dnsPolicy: ClusterFirstWithHostNet
+          nodeSelector:
+            kubernetes.io/hostname: ip-172-31-14-159
+          tolerations:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
+          initContainers:
+            - name: dump
+              image: postgres:17-bookworm
+              env:
+                - name: PGHOST
+                  value: postgres
+                - name: PGDATABASE
+                  value: support_desk
+                - name: PGUSER
+                  value: support_desk_app
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: support-desk-db
+                      key: PGPASSWORD
+                - name: PGCONNECT_TIMEOUT
+                  value: "10"
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  pg_dump -Fc -f /backup/database.dump
+                  pg_restore --list /backup/database.dump > /dev/null
+                  echo "Database dump created."
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 250m
+                  memory: 256Mi
+          containers:
+            - name: upload
+              image: public.ecr.aws/aws-cli/aws-cli:2.42.1
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  key="support-desk/$(date -u +%Y%m%dT%H%M%SZ)-${HOSTNAME}.dump"
+                  aws s3 cp /backup/database.dump \
+                    "s3://ramy-homelab-backups-20261124-1047/$key" \
+                    --region eu-north-1 \
+                    --only-show-errors
+                  echo "Uploaded s3://ramy-homelab-backups-20261124-1047/$key"
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 250m
+                  memory: 256Mi
+          volumes:
+            - name: backup
+              emptyDir:
+                sizeLimit: 256Mi
