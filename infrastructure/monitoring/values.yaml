@@ -3,7 +3,7 @@ alertmanager:
   enabled: false
 
 defaultRules:
-  create: false
+  create: true
 
 # These kubeadm endpoints need separate configuration.
 # We will add them in a later monitoring lesson.
