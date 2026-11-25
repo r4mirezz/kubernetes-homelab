@@ -1,0 +1,15 @@
+replicas: 1
+
+nodeSelector:
+  kubernetes.io/hostname: ip-172-31-1-110
+
+args:
+  - --kubelet-certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
