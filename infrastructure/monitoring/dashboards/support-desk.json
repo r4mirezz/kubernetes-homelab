@@ -1,0 +1,29 @@
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+path = Path("infrastructure/monitoring/dashboards/support-desk.json")
+dashboard = json.loads(path.read_text())
+
+dashboard.pop("id", None)
+dashboard["version"] = 1
+dashboard["refresh"] = "30s"
+
+for panel in dashboard["panels"]:
+    panel["title"] = panel["title"].strip()
+    defaults = panel["fieldConfig"]["defaults"]
+
+    if panel["id"] == 3:
+        defaults["thresholds"]["steps"] = [
+            {"color": "red", "value": None},
+            {"color": "green", "value": 1},
+        ]
+    elif panel["id"] == 4:
+        defaults["thresholds"]["steps"] = [
+            {"color": "green", "value": None},
+            {"color": "red", "value": 1},
+        ]
+
+path.write_text(json.dumps(dashboard, indent=2) + "\n")
+print("Dashboard JSON validated and updated.")
+PY
