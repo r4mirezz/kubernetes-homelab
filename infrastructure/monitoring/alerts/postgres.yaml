@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgres-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: postgres
+      rules:
+        - alert: PostgresUnavailable
+          expr: kube_statefulset_status_replicas_ready{namespace="training",statefulset="postgres"} < 1
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL has no Ready replicas"
+            description: "Check the postgres StatefulSet, Pod events, and storage in the training namespace."

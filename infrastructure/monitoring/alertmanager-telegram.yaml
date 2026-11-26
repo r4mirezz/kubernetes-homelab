@@ -1,0 +1,54 @@
+alertmanager:
+  enabled: true
+
+  alertmanagerSpec:
+    replicas: 1
+    nodeSelector:
+      workload: monitoring
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: monitoring
+        effect: NoSchedule
+    secrets:
+      - alertmanager-telegram
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+  config:
+    global:
+      resolve_timeout: 5m
+
+    route:
+      receiver: "null"
+      group_by: ["alertname", "namespace"]
+      group_wait: 30s
+      group_interval: 1m
+      repeat_interval: 4h
+      routes:
+        - receiver: application-telegram
+          matchers:
+            - alertname="SupportDeskUnavailable"
+        - receiver: database-telegram
+          matchers:
+            - alertname="PostgresUnavailable"
+
+    receivers:
+      - name: "null"
+
+      - name: application-telegram
+        telegram_configs:
+          - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
+            chat_id_file: /etc/alertmanager/secrets/alertmanager-telegram/application-chat-id
+            send_resolved: true
+
+      - name: database-telegram
+        telegram_configs:
+          - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
+            chat_id_file: /etc/alertmanager/secrets/alertmanager-telegram/database-chat-id
+            send_resolved: true
