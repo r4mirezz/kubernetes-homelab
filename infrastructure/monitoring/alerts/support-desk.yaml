@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: support-desk-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: support-desk
+      rules:
+        - alert: SupportDeskUnavailable
+          expr: |
+            kube_deployment_status_replicas_ready{
+              namespace="training",
+              deployment="support-desk"
+            } < 1
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Support Desk has no Ready replicas"
+            description: >-
+              Support Desk has had no Ready replicas for at least
+              one minute. Check Pod events, application logs,
+              and PostgreSQL availability.
